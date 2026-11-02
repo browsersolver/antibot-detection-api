@@ -1,0 +1,222 @@
+<p align="center">
+  <a href="https://www.browsersolver.com"><img src="images/banner.png" alt="Antibot Detection API by BrowserSolver" width="100%"></a>
+</p>
+
+# Antibot Detection API
+
+[![Discord](https://img.shields.io/badge/Discord-Join%20the%20community-5865F2?logo=discord&logoColor=white)](https://discord.gg/CFj3ph8aHU) [![Get API key](https://img.shields.io/badge/BrowserSolver-Get%20an%20API%20key-111827)](https://app.browsersolver.com/register) [![API docs](https://img.shields.io/badge/Docs-API%20reference-0EA5E9)](https://app.browsersolver.com/openapi) [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+The **BrowserSolver Antibot Detection API** runs a single-pass scan that names the bot-protection vendor in front of a URL, so you can pick the right fetch tier before scraping.
+
+- **Antibot Detection API** — Single-pass scan that names the bot-protection vendor in front of a URL so you can choose the right BrowserSolver fetch tier next.
+
+Use it to plan scraping projects, route URLs to the right tier and audit the protection of your own sites.
+
+| Endpoint | Request | Credits |
+|---|---|---|
+| [Antibot Detection API](#antibot-detection-api) | `GET /v1/website/antibot` | 1 |
+
+## Table of contents
+
+- [How it works](#how-it-works)
+- [Antibot Detection API](#antibot-detection-api)
+- [Code examples in other languages](#code-examples-in-other-languages)
+- [Use cases](#use-cases)
+- [Why BrowserSolver?](#why-browsersolver)
+- [FAQ](#faq)
+- [Related repositories](#related-repositories)
+- [Support](#support)
+
+## How it works
+
+1. **Create a BrowserSolver account** and copy your API key from the [dashboard](https://app.browsersolver.com/register).
+2. **Call `https://api.browsersolver.com`** with the header `x-api-key: YOUR_API_KEY`.
+3. **Use the result** in your app — no infrastructure to run.
+
+```bash
+export BROWSERSOLVER_API_KEY="your-api-key"
+pip install requests        # Python
+# TypeScript: Node.js 18+ (native fetch), run with `npx tsx file.ts`
+```
+
+## Antibot Detection API
+
+Single-pass scan that names the bot-protection vendor in front of a URL so you can choose the right BrowserSolver fetch tier next.
+
+`GET https://api.browsersolver.com/v1/website/antibot` · **1 credit per request** · [API reference](https://app.browsersolver.com/openapi)
+
+### Request parameters
+
+| Parameter | In | Type | Required | Description |
+|---|---|---|---|---|
+| `query` | query | string | ✅ | Full URL or bare domain to scan for bot-protection vendors. |
+| `timeout` | query | number | — | Upper bound for waiting on the target HTTP response, expressed in seconds (defaults to `15`). |
+
+### Python example
+
+```python
+import os
+
+import requests
+
+API_KEY = os.environ["BROWSERSOLVER_API_KEY"]
+HEADERS = {"x-api-key": API_KEY}
+
+response = requests.get(
+    "https://api.browsersolver.com/v1/website/antibot",
+    headers=HEADERS,
+    params={
+        "query": "https://www.cloudflare.com/",
+    },
+    timeout=120,
+)
+response.raise_for_status()
+
+data = response.json()
+print(data)
+```
+
+### TypeScript example
+
+```typescript
+type AntibotDetectionApi = {
+  status?: number;
+  vendor?: string;
+  final_url?: string;
+  confidence?: string;
+  detections?: {
+    vendor?: string;
+    evidence?: string[];
+    confidence?: string;
+  }[];
+  requested_url?: string;
+};
+
+const headers = { "x-api-key": process.env.BROWSERSOLVER_API_KEY!, "Content-Type": "application/json" };
+
+const params = new URLSearchParams({
+  "query": "https://www.cloudflare.com/",
+});
+
+const response = await fetch(`https://api.browsersolver.com/v1/website/antibot?${params}`, { headers });
+if (!response.ok) throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+
+const data = (await response.json()) as AntibotDetectionApi;
+console.log(data);
+```
+
+### Output example
+
+Example response from the API reference, abridged.
+
+```json
+{
+  "status": 200,
+  "vendor": "cloudflare",
+  "final_url": "https://asana.com/",
+  "confidence": "high",
+  "detections": [
+    {
+      "vendor": "cloudflare",
+      "evidence": [
+        "cf-ray header matched: d41e8c2f91ab3340-AMS",
+        "server header equals cloudflare"
+      ],
+      "confidence": "high"
+    }
+  ],
+  "requested_url": "https://asana.com/"
+}
+```
+
+### Response fields
+
+| Field | Type | Description |
+|---|---|---|
+| `status` | integer |  |
+| `vendor` | string |  |
+| `final_url` | string |  |
+| `confidence` | string |  |
+| `detections[]` | object[] |  |
+| `detections[].vendor` | string |  |
+| `detections[].evidence` | string[] |  |
+| `detections[].confidence` | string |  |
+| `requested_url` | string |  |
+
+## Code examples in other languages
+
+Ready-to-run examples live in [`examples/`](examples); each reads your key from `BROWSERSOLVER_API_KEY`.
+
+| Language | `antibot` |
+|---|---|
+| cURL (Bash) | [antibot.sh](examples/curl/antibot.sh) |
+| PHP | [antibot.php](examples/php/antibot.php) |
+| C# | [Antibot.cs](examples/csharp/Antibot.cs) |
+| Go | [antibot.go](examples/go/antibot.go) |
+| Java | [AntibotExample.java](examples/java/AntibotExample.java) |
+| Ruby | [antibot.rb](examples/ruby/antibot.rb) |
+| Node.js | [antibot.mjs](examples/nodejs/antibot.mjs) |
+
+## Use cases
+
+- **Tier routing** — Send each domain to Crawler, Rendering or WebUnlocker based on its protection.
+- **Project scoping** — Estimate how hard a list of target sites will be to scrape.
+- **Security audits** — Check which bot-protection vendor is visible on your own domains.
+
+## Why BrowserSolver?
+
+- **Three fetch tiers** — Crawler for static HTML, Rendering for JavaScript pages, WebUnlocker for hosts that still challenge a headless browser.
+- **Know before you fetch** — the Antibot endpoint names the bot-protection vendor in front of a URL so you can choose the right tier.
+- **Screenshots as a service** — PNG, JPEG, WebP or PDF, full page, 18 device presets, cookie banner and ad removal, S3 upload.
+- **Technology detection** — CMS, frameworks, analytics, CDN and security tooling of any public URL.
+- **Copy-paste examples** — Python and TypeScript in each README, 7 more languages in `examples/`.
+
+## FAQ
+
+### How do I authenticate?
+
+Create an account on [BrowserSolver](https://app.browsersolver.com/register), copy your API key and send it in the `x-api-key` header of every request to `https://api.browsersolver.com`.
+
+### How much does a request cost?
+
+Credits per call: `/v1/website/antibot` **1**. See [BrowserSolver pricing](https://www.browsersolver.com/pricing).
+
+### Can I pass a bare domain?
+
+Yes, a full URL or a bare domain such as `cloudflare.com`.
+
+### How is the vendor detected?
+
+From a passive fingerprint of HTTP headers, cookies and the response — see the reference for details.
+
+### Which languages are supported?
+
+Any language that can make an HTTP request. This README shows Python and TypeScript; the [`examples/`](examples) folder contains cURL, PHP, C#, Go, Java, Ruby and Node.js.
+
+## Related repositories
+
+- [Web Unlocker API](https://github.com/browsersolver/web-unlocker-api)
+- [JavaScript Rendering API](https://github.com/browsersolver/javascript-rendering-api)
+- [Web Crawler API](https://github.com/browsersolver/web-crawler-api)
+- [Screenshot API](https://github.com/browsersolver/screenshot-api)
+- [Website Technology API](https://github.com/browsersolver/website-technology-api)
+- [All BrowserSolver repositories](https://github.com/browsersolver)
+
+## Support
+
+- 💬 Join the [Discord](https://discord.gg/CFj3ph8aHU) to ask questions and share what you build.
+- 📚 Read the [API reference](https://app.browsersolver.com/openapi).
+- 🔑 [Get your API key](https://app.browsersolver.com/register).
+
+---
+
+<p align="center">
+  <a href="https://www.browsersolver.com">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="images/logo-dark.svg">
+      <img src="images/logo.svg" alt="BrowserSolver" height="28">
+    </picture>
+  </a>
+  <br>
+  <sub>Built by <a href="https://www.browsersolver.com">BrowserSolver</a>. Examples are released under the MIT license.</sub>
+</p>
